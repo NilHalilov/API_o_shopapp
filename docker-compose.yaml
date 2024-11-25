@@ -1,0 +1,46 @@
+services:
+
+  web:
+    image: shopapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./ozonilberries/:/usr/src/app/
+    ports:
+      - 8000:8000
+    env_file:
+      - ./ozonilberries/.env
+    depends_on:
+      - migration
+    networks:
+      - my_network
+
+  migration:
+    image: shopapp
+    command: python manage.py migrate --noinput
+    depends_on:
+      - db
+    networks:
+      - my_network
+
+  db:
+    image: postgres:14.13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+#    environment:
+#      - POSTGRES_USER=
+#      - POSTGRES_PASSWORD=
+#      - POSTGRES_DB=
+    env_file:
+      - ./ozonilberries/.env
+    networks:
+      - my_network
+
+volumes:
+  postgres_data:
+
+networks:
+  my_network:
+    driver: bridge
